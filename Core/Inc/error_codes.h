@@ -13,10 +13,10 @@ typedef enum
     RET_CODE_HAS_BEEN_INSTED = -6,                  // has been insted
     RET_CODE_HAS_BEEN_INITED = -7,                  // has been inited
     RET_CODE_ERROR_PARAM_NULL = -8,                 // 参数空指针
-    RET_CODE_QUEUE_EVENT_NULL = -9,                      // queue event null
-    RET_CODE_XSEMAPHORETAKE_FAIL = -10,                // xSemaphoreTake fail
-    RET_CODE_XTASKCREATE_FAIL = -11,                // 参数空指针
-    RET_CODE_ERROR_PARAM_NULL = -12,                // 参数空指针
+    RET_CODE_QUEUE_EVENT_NULL = -9,                 // queue event null
+    RET_CODE_XSEMAPHORETAKE_FAIL = -10,             // xSemaphoreTake fail
+    RET_CODE_XTASKCREATE_FAIL = -11,                // 任务创建失败
+    RET_CODE_NO_RIGHT_DATA = -12,                  // 没有符合条件数据
     RET_CODE_ERROR_PARAM_NULL = -13,                // 参数空指针
     RET_CODE_ERROR_PARAM_NULL = -14,                // 参数空指针
     RET_CODE_ERROR_PARAM_NULL = -15,                // 参数空指针

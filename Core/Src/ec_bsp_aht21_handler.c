@@ -1,5 +1,4 @@
 #include "ec_bsp_aht21_handler.h"
-#include "FreeRTOS.h"
 #include "task.h"
 /**
  * @brief 初始化 AHT21 温湿度传感器模块的实例
@@ -28,6 +27,8 @@
  * @attention 这个接口提供给OS 来进行Handler初始化
  * @return 0 表示成功，其他值表示失败
  */
+// 维护一个全局温度度数据队列
+static temp_humi_event_t g_spk_event_array[10] = {NULL};
 void temp_humi_handler_thread(bsp_AHT21_handler_arg_struct *bsp_AHT21_handler_arg_instance)
 {
     // 驱动实例声明
@@ -44,12 +45,11 @@ void temp_humi_handler_thread(bsp_AHT21_handler_arg_struct *bsp_AHT21_handler_ar
         .lifetimes_humi = NULL,
         .queue_event = NULL,
         .aht21_instance = NULL,
-        .thread_os = NULL
-        };
-        aht21_handler_instance.aht21_instance = aht21_instance;
+        .thread_os = NULL};
+    aht21_handler_instance.aht21_instance = aht21_instance;
     // 调用handler构造函数
     int8_t code = aht21_handler_inst(bsp_AHT21_handler_arg_instance, &aht21_handler_instance, &aht21_instance);
-    if (code!= RET_CODE_SUCCESS)
+    if (code != RET_CODE_SUCCESS)
     {
         // 构造失败 执行逆初始化和解构函数
         aht21_handler_deinit(&aht21_handler_instance, &aht21_instance);
@@ -59,7 +59,7 @@ void temp_humi_handler_thread(bsp_AHT21_handler_arg_struct *bsp_AHT21_handler_ar
     // 创建任务
     for (;;)
     {
-        while (event)
+
     }
 }
 
@@ -168,9 +168,9 @@ static int8_t aht21_handler_deInst(bsp_aht21_handler_t *handler)
 {
     if (NULL != handler)
     {
-        //先执行逆初始化
+        // 先执行逆初始化
         aht21_handler_deInit(handler);
-        //自身属性置空
+        // 自身属性置空
         handler->insted = false,
         handler->inited = false,
         handler->init_lock = NULL,
@@ -188,7 +188,7 @@ static int8_t aht21_handler_deInst(bsp_aht21_handler_t *handler)
             aht21_deInit(handler->aht21_instance);
         }
     }
-    handler=NULL;
+    handler = NULL;
     return RET_CODE_SUCCESS;
 }
 
@@ -207,6 +207,58 @@ static int8_t aht21_handler_deInit(bsp_aht21_handler_t *bsp_aht21_handler_instan
         vSemaphoreDelete(bsp_aht21_handler_instance->init_lock);
         vQueueDelete(bsp_aht21_handler_instance->queue_event);
     }
-    bsp_aht21_handler_instance=NULL;
+    bsp_aht21_handler_instance = NULL;
+    return RET_CODE_SUCCESS;
+}
+
+/**
+ * @param event  temp_humi_event_t 实例
+ * @attention 接收参数来提供温湿度
+ * @return 0 表示成功，其他值表示失败
+ */
+int8_t temp_humi_event_handler_send(temp_humi_event_t *event)
+{
+    if (NULL == event)
+    {
+        return RET_CODE_ERROR_PARAM_NULL;
+    }
+    // 声明返回对象
+    temp_humi_event_t event_result;
+    // 查看请求事件时效
+    if (NULL != event->lifetime && g_spk_event_array)
+    {
+        // 遍历队列,有满足时效数据直接返回
+        for (size_t i = 0; i < sizeof(g_spk_event_array); i++)
+        {
+            if (g_spk_event_array[i].timestamp < event->(lifetime)HAL_GetTick())
+            {
+                event_result = g_spk_event_array[i];
+            }
+        }
+
+        // 没有最新时效返回让Handler直接去查
+        return RET_CODE_NO_RIGHT_DATA,                  // 没有符合条件数据
+    }
+    else
+    {
+        // 返回队列最新数据
+        event_result = g_spk_event_array[i];
+    }
+    // 进行赋值 及调用回调函数
+    if (NULL != event->humi)
+    {
+        event->humi = event_result.humi;
+    }
+    if (NULL != event->temp)
+    {
+        event->humi = event_result.temp;
+    }
+    if (NULL != event->type_of_data)
+    {
+        event->humi = event_result.humi;
+        event->humi = event_result.temp;
+    }
+    event->callback(event->humi, event->temp);
+    //成功
     return RET_CODE_SUCCESS;
 }

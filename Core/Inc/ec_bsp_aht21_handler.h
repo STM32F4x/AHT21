@@ -178,6 +178,11 @@ static int8_t inst_BSP_driver_instance(bsp_aht21_handler_t *aht21_handler_instan
  */
 void temp_humi_handler_thread(bsp_AHT21_handler_arg_struct *bsp_AHT21_handler_arg_instance); // 被操作系统调用的
 
+/**
+ * @param event  temp_humi_event_t 实例
+ * @attention 接收参数来提供温湿度
+ * @return 0 表示成功，其他值表示失败
+ */
 int8_t temp_humi_event_handler_send(temp_humi_event_t *event);
 
 #endif

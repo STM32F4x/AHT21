@@ -44,6 +44,15 @@
 typedef struct{
 	int8_t (*pfInit)(void);
 	int8_t (*pfDeInit)(void);
+	//IIC接口补充
+	int8_t (*pfStart)(void);
+    int8_t (*pfStop)(void);
+    int8_t (*pfWaitAck)(void);
+    int8_t (*pfSendByte)(uint8_t byte);
+    int8_t (*pfReadByte)(uint8_t *byte);
+    int8_t (*pfSendAck)(void);
+    int8_t (*pfSendNack)(void);
+
 	int8_t (*pfWriteReg)(uint8_t addr, uint8_t *pdata, uint8_t size);
 	int8_t (*pfReadReg)(uint8_t addr, uint8_t *pdata, uint8_t size);
 }iic_driver_interface_t;
